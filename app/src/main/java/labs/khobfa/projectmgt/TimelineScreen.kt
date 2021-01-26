@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -27,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.AmbientDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -221,10 +218,24 @@ fun TimelineScreen(project: Project = mockProject) {
                 .padding(horizontal = 20.dp)
                 .fillMaxWidth()
         ) {
-            val modifier = Modifier.background(color = Color.White)
             TimelineHeader()
-            for (task in project.tasks) {
-                TimelineTask(task, modifier)
+            for (index in project.tasks.indices) {
+                val task = project.tasks[index]
+                val prev = project.tasks.getOrNull(index - 1)
+                val next = project.tasks.getOrNull(index + 1)
+                TimelineTask(
+                    task = task,
+                    topLineState = when {
+                        prev == null -> LineState.Undefined
+                        task.timeCode == prev.timeCode -> LineState.In
+                        else -> LineState.Out
+                    },
+                    bottomLineState = when {
+                        next == null -> LineState.Undefined
+                        task.timeCode == next.timeCode -> LineState.In
+                        else -> LineState.Out
+                    },
+                )
             }
         }
     }
